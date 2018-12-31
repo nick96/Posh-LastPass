@@ -6,8 +6,7 @@ pipeline {
             agent {
                 dockerfile {
                     label    "linux"
-                    filename "Dockerfile.arm"
-                    dir      "docker"
+                    args     "-f docker/dockerfile.arm ."
                 }
             }
 
