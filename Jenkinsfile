@@ -2,6 +2,9 @@ pipeline {
     agent none
 
     stages {
+
+        def armImage = docker.build("jenksin/arm-ps", "-f docker/Dockerfile.arm .")
+
         stage("Linux dot-net core") {
             agent {
                 dockerfile {
@@ -10,7 +13,7 @@ pipeline {
                 }
             }
 
-            steps {
+            armImage.inside {
                 sh "/usr/bin/pwsh Invoke-Pester"
             }
         }
