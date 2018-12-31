@@ -1,46 +1,24 @@
-pipeline {
-    agent none
+node("linux") {
+    def armImage = docker.build("jenkins/arm-ps", "-f docker/Dockerfile.arm .")
 
-    stages {
-
-        def armImage = docker.build("jenksin/arm-ps", "-f docker/Dockerfile.arm .")
-
-        stage("Linux dot-net core") {
-            agent {
-                dockerfile {
-                    label    "linux"
-                    args     "-f docker/dockerfile.arm ."
-                }
-            }
-
-            armImage.inside {
-                sh "/usr/bin/pwsh Invoke-Pester"
-            }
+    stage("Linux dot-net core") {
+        armImage.inside {
+            sh "/usr/bin/pwsh Invoke-Pester"
         }
+    }
+}
 
-        stage("Native windows server") {
-            agent {
-                label "windows"
-            }
+node("windows") {
+    def nanoserverImage = docker.build("jenkins/nanoserver-ps", "-f docker/Dockerfile.nanoserver .")
 
-            steps {
-                bat "powershell.exe -ExecutionPolicy ByPass -Command Install-Module Pester"
-                bat "powershell.exe -ExecutionPolicy ByPass -Command Invoke-Pester"
-            }
+    stage("Native windows server") {
+        bat "powershell.exe -ExecutionPolicy ByPass -Command Install-Module Pester"
+        bat "powershell.exe -ExecutionPolicy ByPass -Command Invoke-Pester"
+    }
+
+    stage("Windows nanoserver dot-net core") {
+        nanoserverImage.inside {
+            bat "powershell.exe -ExecutionPolicty ByPass -Command Invoke-Pester"
         }
-
-        stage("Windows nanoserver dot-net core") {
-            agent {
-                    dockerfile {
-                        label    "linux"
-                        filename "Dockerfile.nanoserver"
-                        dir      "docker"
-                    }
-            }
-
-            steps {
-                bat "powershell.exe -ExecutionPolicty ByPass -Command Invoke-Pester"
-            }
-        }
-    }    
+    }
 }
