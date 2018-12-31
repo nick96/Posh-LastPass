@@ -2,45 +2,43 @@ pipeline {
     agent none
 
     stages {
-        parallel {
-            stage("Linux dot-net core") {
-                agent {
+        stage("Linux dot-net core") {
+            agent {
+                dockerfile {
+                    label    "linux"
+                    filename "Dockerfile"
+                    dir      "docker"
+                }
+            }
+
+            steps {
+                sh "/usr/bin/pwsh Invoke-Pester"
+            }
+        }
+
+        stage("Native windows server") {
+            agent {
+                label "windows"
+            }
+
+            steps {
+                bat "powershell.exe -ExecutionPolicy ByPass -Command Install-Module Pester"
+                bat "powershell.exe -ExecutionPolicy ByPass -Command Invoke-Pester"
+            }
+        }
+
+        stage("Windows nanoserver dot-net core") {
+            agent {
                     dockerfile {
                         label    "linux"
-                        filename "Dockerfile"
+                        filename "Dockerfile.nanoserver"
                         dir      "docker"
                     }
-                }
-    
-                steps {
-                    sh "/usr/bin/pwsh Invoke-Pester"
-                }
             }
-    
-            stage("Native windows server") {
-                agent {
-                    label "windows"
-                }
-    
-                steps {
-                    bat "powershell.exe -ExecutionPolicy ByPass -Command Install-Module Pester"
-                    bat "powershell.exe -ExecutionPolicy ByPass -Command Invoke-Pester"
-                }
+
+            steps {
+                bat "powershell.exe -ExecutionPolicty ByPass -Command Invoke-Pester"
             }
-    
-            stage("Windows nanoserver dot-net core") {
-                agent {
-                        dockerfile {
-                            label    "linux"
-                            filename "Dockerfile.nanoserver"
-                            dir      "docker"
-                        }
-                }
-    
-                steps {
-                    bat "powershell.exe -ExecutionPolicty ByPass -Command Invoke-Pester"
-                }
-            }
-        }    
-    }
+        }
+    }    
 }
