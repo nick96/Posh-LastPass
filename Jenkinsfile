@@ -22,7 +22,8 @@ pipeline {
             }
 
             steps {
-                bat "powershell.exe -ExecutionPolicty ByPass -Command Invoke-Pester"
+                bat "powershell.exe -ExecutionPolicy ByPass -Command Install-Module Pester"
+                bat "powershell.exe -ExecutionPolicy ByPass -Command Invoke-Pester"
             }
         }
 
